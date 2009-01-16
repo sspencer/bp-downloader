@@ -1,9 +1,12 @@
-require 'Pathname'
- 
+require 'rbconfig'
+require 'fileutils'
+require 'open-uri'
+include Config
 
 class Downloader
   def initialize(args)
     @tempDir = args["temp_dir"]
+    Dir.mkdir(@tempDir)
     if CONFIG['arch'] =~ /mswin/
       @platform = "Windows"
     else
@@ -15,11 +18,12 @@ class Downloader
   def get(bp, args)
     url = args['url']
     perms = @platform == "Windows" ? "wb" : "w"
-    path = @tempDir + "/" + "downloaded_" + @fileNumber
+    path = @tempDir + "/" + "downloaded_" + @fileNumber.to_s
     f = File.new(path, perms)
 
     totalSize = 0
     lastPercent = 0
+    interval = 1
 
     f.write(open(url,
                  :content_length_proc => lambda {|t|
@@ -49,7 +53,7 @@ rubyCoreletDefinition = {
   'name'  => "Downloader",
   'major_version' => 0,
   'minor_version' => 0,
-  'micro_version' => 1,
+  'micro_version' => 2,
   'documentation' => 
     'Download remote files over HTTP to a temporary location and return file handles to javascript.',
 
