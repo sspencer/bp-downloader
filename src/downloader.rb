@@ -19,6 +19,7 @@ class Downloader
     url = args['url']
     perms = @platform == "Windows" ? "wb" : "w"
     path = @tempDir + "/" + "downloaded_" + @fileNumber.to_s
+    @fileNumber += 1
     f = File.new(path, perms)
 
     totalSize = 0
