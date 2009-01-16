@@ -1,0 +1,7 @@
+What is this?
+
+A simple Ruby BrowserPlus service that can Download a file given a URL 
+to a temporary page session scoped location, and return a file handle
+back to JavaScript.  This is useful to manipulate web based images or
+files (like photos with ImageAlter, yeah).
+
