@@ -1,6 +1,7 @@
 require 'rbconfig'
 require 'fileutils'
 require 'open-uri'
+require 'uri'
 include Config
 
 class Downloader
@@ -12,11 +13,22 @@ class Downloader
     else
       @platform = "Darwin"
     end
+
+    uri = URI.parse(args['uri'])
+    @scheme = uri.scheme
+    @host = uri.host
+
     @fileNumber = 0
   end
 
   def get(bp, args)
     url = args['url']
+    uri = URI.parse(url)
+    if (!uri || uri.scheme != @scheme || uri.host != @host)
+      bp.error("SecurityError", "Can only download files from same host.")
+      return
+    end
+    
     perms = @platform == "Windows" ? "wb" : "w"
     path = @tempDir + "/" + "downloaded_" + @fileNumber.to_s
     @fileNumber += 1
@@ -54,7 +66,7 @@ rubyCoreletDefinition = {
   'name'  => "Downloader",
   'major_version' => 0,
   'minor_version' => 0,
-  'micro_version' => 2,
+  'micro_version' => 3,
   'documentation' => 
     'Download remote files over HTTP to a temporary location and return file handles to javascript.',
 

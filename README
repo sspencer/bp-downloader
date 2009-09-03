@@ -5,3 +5,6 @@ to a temporary page session scoped location, and return a file handle
 back to JavaScript.  This is useful to manipulate web based images or
 files (like photos with ImageAlter, yeah).
 
+Note that there is a same domain policy, so you can only download
+files from the same domain.
+

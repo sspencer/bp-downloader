@@ -1,0 +1,95 @@
+<html>  
+<head>
+    <title>BrowserPlus: Download Service</title>
+    <style type="text/css" media="screen">
+        h1 { font-size:16pt;letter-spacing:1px;}
+    </style>
+</head>  
+<body>  
+    <h1>BrowserPlus: Downloader</h1>
+
+    <p>
+        The Downloader service transforms a string URL into a BrowserPlus path that can then be
+        passed into other BrowserPlus services like ImageAlter.  The service has a same domain
+        policy and will only transform URLs on the same domain that the Downloader service
+        is invoked from.
+    </p>
+    <div id="control">
+        <label>URL:</label>
+        <input id="url" type="text" value="http://localhost/image.gif">
+        <input id="grab" type="button" value="Grab It!">
+        <br><br>
+    </div>
+    <h2>Result</h2>
+    <textarea id="text" style="display:none" rows="20" cols="70"></textarea>
+    <br><br>
+    <img id="img" style="display:none"><br><br>
+    <div id="result"></div>
+
+    <script type="text/javascript" src="http://bp.yahooapis.com/2.4.17/browserplus-min.js"></script>  
+    <script type="text/javascript">  
+
+    var print = function(s) {
+        var result = document.getElementById("result");
+        result.innerHTML += "<br>" + s;
+    };
+
+    var mycb = function(r) {
+        print("download progress: " + r + "%");
+    };
+
+    var err = function(f, result) {
+        print(f + " Error: " + result.error + (result.verboseError ? (": " + result.verboseError) : ""));
+    };
+
+    var displayFile = function(f) {
+        // don't know if it's an image or text ... let's try both
+        BrowserPlus.FileAccess.Read({ file: f },function (r1) {
+            document.getElementById("img").style.display="none";
+            document.getElementById("text").style.display="none";
+
+	        if (r1.success) {
+	            document.getElementById("text").style.display="block";
+		        document.getElementById("text").value = r1.value;
+	        } else {
+                BrowserPlus.FileAccess.GetURL({ file: f }, function (r2) {
+	                if (r2.success) {
+	                    document.getElementById("img").style.display="block";
+		                document.getElementById("img").src = r2.value;
+	                }
+	            });
+	        }
+	    });
+    };
+
+    BrowserPlus.init(function(initres) {  
+        var services = [{service: "Downloader", version: "0"}, {service: 'FileAccess', version: "1"}],
+            grab = document.getElementById("grab"),
+            url = document.getElementById("url");
+
+        if (initres.success) {  
+            BrowserPlus.require({ services: services }, 
+                function(reqres) {
+                    if (reqres.success) {
+                        grab.onclick=function(e) {
+                            BrowserPlus.Downloader.get({url: url.value, callback: mycb}, 
+                                function(r) {
+                                    if (r.success) {
+                                        displayFile(r.value);
+                                    } else {
+                                        err("DOWNLOADER", r);
+                                    }
+                                });
+                            return false;
+                        };
+                    } else {
+                        err("REQUIRE", reqres);
+                    }
+                });
+        } else {
+            err("INIT", initres);
+        }
+    });
+    </script>  
+</body>  
+</html>
