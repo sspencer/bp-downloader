@@ -79,6 +79,7 @@ class Downloader
                      end
                    }).read)
 
+      bp_log("info", "Successful download to #{path})!")      
       bp.complete(Pathname.new(path))
     rescue Exception => e
       bp_log("info", "error downloading file (#{uri.to_s}): #{ e } (#{ e.class })!")
