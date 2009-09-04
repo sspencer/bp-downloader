@@ -92,9 +92,9 @@ end
 rubyCoreletDefinition = {
   'class' => "Downloader",
   'name'  => "Downloader",
-  'major_version' => 0,
+  'major_version' => 1,
   'minor_version' => 0,
-  'micro_version' => 3,
+  'micro_version' => 0,
   'documentation' => 
     'Download remote files over HTTP to a temporary location and return file handles to javascript.',
 
