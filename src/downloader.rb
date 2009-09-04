@@ -16,9 +16,9 @@ class Downloader
 
     # keep uri around for relative path resolution
     @uri = URI.parse(args['uri'])
-    @scheme = uri.scheme
-    @host = uri.host
-    @port = uri.port
+    @scheme = @uri.scheme
+    @host = @uri.host
+    @port = @uri.port
     
     bp_log("info", "session initialized from #{@scheme}://#{@host}:#{@port}")
 
@@ -26,6 +26,12 @@ class Downloader
   end
 
   def get(bp, args)
+    # fail for non-http pages
+    if !['http', 'https'].include?(@scheme)
+      bp.error("SecurityError", "Download only allowed from internet sites")
+      return
+    end
+
     url = args['url']
 
     # parse url supporting relative urls
@@ -44,7 +50,7 @@ class Downloader
       bp.error("SecurityError", "Can only download files from same host.")
       return
     end
-    
+
     perms = @platform == "Windows" ? "wb" : "w"
     path = @tempDir + "/" + "downloaded_" + @fileNumber.to_s
     @fileNumber += 1
@@ -53,27 +59,33 @@ class Downloader
     totalSize = 0
     lastPercent = 0
     interval = 1
-
-    f.write(open(url,
-                 :content_length_proc => lambda {|t|
-                   if (t && t > 0)
-                     totalSize = t
-                   end
-                 },
-                 :progress_proc => lambda {|s|
-                   if (totalSize > 0)
-                     percent = ((s.to_f / totalSize) * 100).to_i
-                     if (percent/interval > lastPercent/interval)
-                       lastPercent = percent
-                       if args.include? "callback"
-                         args["callback"].invoke(percent)
+    
+    begin
+      f.write(open(uri.to_s,
+                   :content_length_proc => lambda {|t|
+                     if (t && t > 0)
+                       totalSize = t
+                     end
+                   },
+                   :progress_proc => lambda {|s|
+                     if (totalSize > 0)
+                       percent = ((s.to_f / totalSize) * 100).to_i
+                       if (percent/interval > lastPercent/interval)
+                         lastPercent = percent
+                         if args.include? "callback"
+                           args["callback"].invoke(percent)
+                         end
                        end
                      end
-                   end
-                 }).read)
+                   }).read)
+
+      bp.complete(Pathname.new(path))
+    rescue Exception => e
+      bp_log("info", "error downloading file (#{uri.to_s}): #{ e } (#{ e.class })!")
+      bp.error("HTTPError", "Couldn't download file: #{uri.to_s}")
+    end
+
     f.close()
-    
-    bp.complete(Pathname.new(path))
   end
 end
 
