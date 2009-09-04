@@ -1,0 +1,7 @@
+Version 1.0.0
+	* (lth) improved error handling
+	* (lth) relative url support
+	* (lth) verify port match
+
+Version 0.0.3
+	* Same domain site locking.
