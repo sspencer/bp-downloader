@@ -1,14 +1,12 @@
-require 'rbconfig'
 require 'fileutils'
 require 'open-uri'
 require 'uri'
-include Config
 
 class Downloader
   def initialize(args)
     @tempDir = args["temp_dir"]
     Dir.mkdir(@tempDir)
-    if CONFIG['arch'] =~ /mswin/
+    if RUBY_PLATFORM =~ /mswin32/
       @platform = "Windows"
     else
       @platform = "Darwin"
