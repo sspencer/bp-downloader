@@ -14,17 +14,33 @@ class Downloader
       @platform = "Darwin"
     end
 
-    uri = URI.parse(args['uri'])
+    # keep uri around for relative path resolution
+    @uri = URI.parse(args['uri'])
     @scheme = uri.scheme
     @host = uri.host
+    @port = uri.port
+    
+    bp_log("info", "session initialized from #{@scheme}://#{@host}:#{@port}")
 
     @fileNumber = 0
   end
 
   def get(bp, args)
     url = args['url']
-    uri = URI.parse(url)
-    if (!uri || uri.scheme != @scheme || uri.host != @host)
+
+    # parse url supporting relative urls
+    uri = nil
+    begin
+      uri = URI.parse(url)
+      uri = uri.host ? uri : URI.join(@uri.to_s, url)
+    rescue Exception
+      bp.error("ParamError", "Couldn't parse url argument: #{url}")
+      return
+    end
+    
+    if (!uri || uri.scheme != @scheme || uri.host != @host || uri.port != @port)
+      bp_log("warn", "download denied, host mismatch " +
+             "(#{uri.scheme}://#{uri.host}:#{@port} != #{@scheme}://#{@host}:#{@port})")
       bp.error("SecurityError", "Can only download files from same host.")
       return
     end
